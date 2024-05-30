@@ -7,12 +7,13 @@
     <link href="css/style.css" rel="stylesheet">
   </head>
   <body>
-    <form action="/login/" method="POST">
-      <input type="text" id="username" name="username">
-      <input type="password" id="password" name="password">
-      <input type="submit">
-      {% csrf_token %}
-    </form>
+    <h1>Chats</h1>
+    <ul>
+    {% for user in users %}
+      <li><a href="{% url 'messages' current.id user.id %}">{{ user.username }}</a></li>
+    {% endfor %}
+    </ul>
+    <a href="/logout">Logout</button>
 
   </body>
 </html>

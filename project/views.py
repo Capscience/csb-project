@@ -19,7 +19,16 @@ def index(request):
 
 @login_required
 def messages_view(request, sender, receiver):
+    # Flaw 2, broken access control:
     sender = User.objects.get(id=sender)
+    # Simplest way to fix is to just add a check (best would be to change the
+    # route to only accept one parameter, but this requires changes in multiple
+    # places). Redirecting to index if sender is wrong is simpler, and has same
+    # effect.
+    #
+    # if sender != request.user:
+    #     return redirect("index")
+
     receiver = User.objects.get(id=receiver)
     messages = Message.objects.filter(
         Q(sender=sender) & Q(receiver=receiver)
@@ -34,6 +43,7 @@ def messages_view(request, sender, receiver):
 def send_view(request, receiver):
     sender = request.user
     content = request.GET.get("message", "")
+    # FLAW 1, SQL injection:
     sql = (
         "INSERT INTO project_message (sender_id, receiver_id, content, time) VALUES "
         f"('{sender.id}', '{receiver}', '{content}', datetime('now'));"
@@ -41,6 +51,17 @@ def send_view(request, receiver):
     with connection.cursor() as cursor:
         cursor.execute(sql)
     return redirect(reverse("messages", args=(sender.id, receiver)))
+
+
+# Fixed version. Both flaws 1 and 3 are fixed here.
+# @login_required
+# def send_view(request, receiver):
+#     sender = request.user
+#     content = request.POST.get("message", "")
+#     receiver = User.objects.get(id=receiver)
+#     message = Message(sender=sender, receiver=receiver, content=content)
+#     message.save()
+#     return redirect(reverse("messages", args=(sender.id, receiver.id)))
 
 
 def login_view(request):

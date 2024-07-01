@@ -13,7 +13,11 @@
       <li>{{ message.sender }}: {{ message.content |safe }}</li>
     {% endfor %}
     </ul>
+    <!-- Flaw 3, CSRF -->
     <form action="/send/{{ receiver.id }}/" method="GET">
+    <!-- Fixed form tag with POST method, and added CSRF protection -->
+    <!-- <form action="/send/{{ receiver.id }}/" method="POST"> -->
+    <!--   {% csrf_token %} -->
       <input type="text" name="message">
       <button type="submit">Send</button>
     </form>
